@@ -39,6 +39,14 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data)
+        # Если пользователь не пожелал менять/передавать username и email
+        if 'email' not in request.data:
+            request.data['email'] = request._user.email
+        if 'username' not in request.data:
+            request.data['username'] = request._user.username
+        print(request._user.username)
+        print(request._user.email)
+        # Сериализуем данные
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             # Проверка что роль может изменить только admin или superuser
@@ -47,14 +55,14 @@ class UserViewSet(viewsets.ModelViewSet):
                     serializer.save()
                     return Response(
                         serializer.data,
-                        status=status.HTTP_201_CREATED
+                        status=status.HTTP_200_OK
                     )
                 return Response(
                     {'role': 'Only the admin assigns roles.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -89,7 +97,7 @@ def token_send(found_user):
         'YaMDb API.Сервис',
         f'Здравствуйте {found_user.username}! Ваш код: {token}',
         'from@example.com',
-        ['to@example.com'],
+        [found_user.email],
         fail_silently=False,
     )
     return token
@@ -125,7 +133,7 @@ def signup_to_api(request):
             found_user.save()
             return Response(
                 {'email': found_user.email, 'username': found_user.username},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # Проверяем что email соотвтетсвует username в БД,
@@ -140,7 +148,8 @@ def signup_to_api(request):
     found_user.confirmation_code = token_send(found_user)
     found_user.save()
     return Response(
-        {'email': found_user.email, 'username': found_user.username}
+        {'email': found_user.email, 'username': found_user.username},
+        status=status.HTTP_200_OK
     )
 
 
