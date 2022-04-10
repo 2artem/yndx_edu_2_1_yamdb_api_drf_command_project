@@ -1,0 +1,142 @@
+GET http://127.0.0.1:8000/api/v1/categories/?search=Музыка
+
+###
+
+POST http://127.0.0.1:8000/api/v1/categories/
+Content-Type: application/json
+
+{
+    "name": "Movies",
+    "slug": "11"
+}
+
+###
+
+DELETE http://127.0.0.1:8000/api/v1/categories/11/
+
+###
+
+GET http://127.0.0.1:8000/api/v1/genres/
+
+###
+
+POST http://127.0.0.1:8000/api/v1/genres/
+Content-Type: application/json
+
+{
+    "name": "Rock",
+    "slug": "12"
+}
+
+###
+
+DELETE http://127.0.0.1:8000/api/v1/genres/12/
+
+###
+
+GET http://127.0.0.1:8000/api/v1/titles/
+
+###
+
+POST http://127.0.0.1:8000/api/v1/titles/
+Content-Type: application/json
+
+{
+    "name": "FF",
+    "year": 2023,
+    "description": "Hhh",
+    "genre": 1,
+    "category": 1
+}
+
+###
+
+GET http://127.0.0.1:8000/api/v1/titles/1/
+
+###
+
+PATCH http://127.0.0.1:8000/api/v1/titles/1/
+Content-Type: application/json
+
+{
+    "name": "Flesh",
+    "year": 2022,
+    "genre": "Kek",
+    "category": "hehe"
+}
+
+###
+
+DELETE http://127.0.0.1:8000/api/v1/titles/13/
+
+###
+
+GET http://127.0.0.1:8000/api/v1/titles/10/reviews/
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ5ODY4NTQ5LCJqdGkiOiIwZTA0OWYxMzgwZGY0M2ZmOWI1ZDY0YTg1MGI0Y2ZjNCIsInVzZXJfaWQiOjF9.iWyezox3ru6lKq6NJRZQNepb_yjdCQK0tQxvfLIhHuo
+
+###
+
+POST http://127.0.0.1:8000/api/v1/titles/14/reviews/
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ5ODY4NTQ5LCJqdGkiOiIwZTA0OWYxMzgwZGY0M2ZmOWI1ZDY0YTg1MGI0Y2ZjNCIsInVzZXJfaWQiOjF9.iWyezox3ru6lKq6NJRZQNepb_yjdCQK0tQxvfLIhHuo
+Content-Type: application/json
+
+{
+    "text": "Ну такое",
+    "score": 3
+}
+
+###
+
+POST http://127.0.0.1:8000/auth/jwt/create/
+Content-Type: application/json
+
+{
+    "username": "KarinaKiki",
+    "password": "1"
+}
+
+###
+
+GET http://127.0.0.1:8000/api/v1/titles/1/reviews/1/
+
+###
+
+PATCH http://127.0.0.1:8000/api/v1/titles/1/reviews/1/
+Content-Type: application/json
+
+{
+    "text": "Не пойдет",
+    "score": 1
+}
+
+###
+
+DELETE http://127.0.0.1:8000/api/v1/titles/1/reviews/1/
+
+###
+
+GET http://127.0.0.1:8000/api/v1/titles/1/reviews/3/comments/3
+
+###
+
+POST http://127.0.0.1:8000/api/v1/titles/1/reviews/3/comments/
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ5ODY4NTQ5LCJqdGkiOiIwZTA0OWYxMzgwZGY0M2ZmOWI1ZDY0YTg1MGI0Y2ZjNCIsInVzZXJfaWQiOjF9.iWyezox3ru6lKq6NJRZQNepb_yjdCQK0tQxvfLIhHuo
+Content-Type: application/json
+
+{
+    "text": "ок"
+}
+
+###
+
+PATCH http://127.0.0.1:8000/api/v1/titles/1/reviews/3/comments/2/
+#Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjQ5ODY4NTQ5LCJqdGkiOiIwZTA0OWYxMzgwZGY0M2ZmOWI1ZDY0YTg1MGI0Y2ZjNCIsInVzZXJfaWQiOjF9.iWyezox3ru6lKq6NJRZQNepb_yjdCQK0tQxvfLIhHuo
+Content-Type: application/json
+
+{
+    "text": "hh"
+}
+
+###
+
+DELETE http://127.0.0.1:8000/api/v1/titles/1/reviews/3/comments/2/
