@@ -18,10 +18,10 @@ from django.urls import path
 from django.urls import include
 from django.views.generic import TemplateView
 
-# Раскомментировать для api/v1/
+
 urlpatterns = [
+    path('api/', include('users.urls')),
     path('admin/', admin.site.urls),
-    #path('api/', include('api.urls')),
     path(
         'redoc/',
         TemplateView.as_view(template_name='redoc.html'),
