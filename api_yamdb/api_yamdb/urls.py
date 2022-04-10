@@ -4,7 +4,6 @@ from django.views.generic import TemplateView
 
 # Раскомментировать для api/v1/
 urlpatterns = [
-    path('api/', include('reviews.urls')),
     path('admin/', admin.site.urls),
     path(
         'redoc/',
