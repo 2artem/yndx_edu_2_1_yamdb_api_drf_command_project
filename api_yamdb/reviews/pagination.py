@@ -15,3 +15,7 @@ class TitlesPagination(PageNumberPagination):
 
 class ReviewPagination(PageNumberPagination):
     page_size = 5
+
+
+class CommentPagination(PageNumberPagination):
+    page_size = 5

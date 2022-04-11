@@ -30,7 +30,7 @@ class Genre(models.Model):
         return self.slug
 
 
-class Titles(models.Model):
+class Title(models.Model):
     def check_value_year_valid(value):
         """Проверка что значение года корректно."""
         message = (
@@ -97,7 +97,7 @@ class Review(models.Model):
     score = models.IntegerField(choices=CHOICE)
     pub_date = models.DateTimeField(auto_now_add=True)
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         blank=False,
         null=False
@@ -134,3 +134,10 @@ class Comment(models.Model):
     text = models.TextField(max_length=10000)
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True)
+
+    class Meta:
+        ordering = ['-pub_date']
+        verbose_name = 'Комментарий'
+
+    def str(self):
+        return self.text[:15]

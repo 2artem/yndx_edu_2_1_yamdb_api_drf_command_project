@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Review, Titles, Genre, Category, Comment
+from .models import Review, Title, Genre, Category, Comment
 
 # Register your models here.
 class ReviewAdmin(admin.ModelAdmin):
@@ -27,7 +27,7 @@ class TitlesAdmin(admin.ModelAdmin):
     )
     filter_horizontal = ('genre',)
 
-admin.site.register(Titles, TitlesAdmin)
+admin.site.register(Title, TitlesAdmin)
 
 
 class GenreAdmin(admin.ModelAdmin):

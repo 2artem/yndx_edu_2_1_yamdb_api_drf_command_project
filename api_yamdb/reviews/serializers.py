@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from reviews.models import Category, Genre, Titles, Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment
+from rest_framework import status
 
 User = get_user_model()
 
@@ -34,7 +35,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
 
 
@@ -42,6 +43,21 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
+    def validate(self, data):
+        """
+        Один пользователь может оставить
+        только лишь один отзыв на произведение.
+        """
+        # Достаем из запроса username и id произедения
+        title_id = self.context['request'].parser_context['kwargs']['title_id']
+        username = self.context['request'].user
+        # Проверка на наличие в БД отзыва пользователя из запроса
+        if Review.objects.filter(title_id=title_id, author=username).exists() and self.context['request'].method == 'POST':
+            raise serializers.ValidationError(
+                    'Вы уже оставляли свой отзыв к этому произведению.',
+                    code=status.HTTP_400_BAD_REQUEST
+                )
+        return data
 
     class Meta:
         model = Review

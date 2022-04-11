@@ -7,9 +7,10 @@ from rest_framework import filters
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .permissions import AdminAllPermission, AdminAllOnlyAuthorPermission
-from .models import Category, Genre, Titles, Review, Comment
+from .models import Category, Genre, Title, Review, Comment
 from .serializers import TitlesSerializer, CategorySerializer, GenreSerializer, ReviewSerializer, CommentSerializer
 from .pagination import CategoryPagination, GenrePagination, TitlesPagination, ReviewPagination
+from .pagination import CommentPagination
 
 
 class ListCreateDestroyModelViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin,
@@ -30,6 +31,8 @@ class GenreViewSet(ListCreateDestroyModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, AdminAllPermission,)
     pagination_class = GenrePagination
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('^name',)
 
 
 
@@ -41,11 +44,12 @@ class CategoryViewSet(ListCreateDestroyModelViewSet):
     pagination_class = CategoryPagination
     search_fields = ('^name',)
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    """Вьюсет для Titles."""
-    queryset = Titles.objects.annotate(rating=Avg('review__score')).order_by('year')
+    """Вьюсет для Title."""
+    queryset = Title.objects.annotate(rating=Avg('review__score')).order_by('year')
     serializer_class = TitlesSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, AdminAllPermission,)
     pagination_class = TitlesPagination
@@ -64,13 +68,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
+        title = get_object_or_404(Title, id=title_id)
         new_qweryset = Review.objects.filter(title=title)
         return new_qweryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, id=title_id)
+        title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user, title=title)
 
 
@@ -78,6 +82,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для Comment."""
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, AdminAllOnlyAuthorPermission,)
+    pagination_class = CommentPagination
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
