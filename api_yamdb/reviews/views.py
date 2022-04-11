@@ -40,13 +40,14 @@ class CategoryViewSet(ListCreateDestroyModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Вьюсет для Titles"""
-    queryset = Titles.objects.annotate(rating=Avg('review__score'))
+    queryset = Titles.objects.annotate(rating=Avg('review__score')).order_by('year')
     serializer_class = TitlesSerializer
     #permission_classes = (IsAuthenticatedOrReadOnly, AdminAllPermission,)
     pagination_class = TitlesPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('category__slug', 'genre__slug', 'name', 'year')
     filterset_fields = ('category', 'genre', 'name', 'year')
+
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

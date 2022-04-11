@@ -11,10 +11,24 @@ class Category(models.Model):
     name = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=50, unique=True, validators=[validate_slug])
 
+    class Meta:
+        ordering = ['slug']
+        verbose_name = 'Категория'
+
+    def __str__(self):
+        return self.slug
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=50, unique=True, validators=[validate_slug])
+
+    class Meta:
+        ordering = ['slug']
+        verbose_name = 'Жанр'
+
+    def __str__(self):
+        return self.slug
 
 
 class Titles(models.Model):
@@ -50,13 +64,11 @@ class Titles(models.Model):
         validators=[check_value_year_valid],
     )
 
+    class Meta:
+        verbose_name = 'Произведение'
+
     def __str__(self):
         return self.name
-
-
-class TitlesGenre(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    titles = models.ForeignKey(Titles, on_delete=models.CASCADE)
 
 
 class Review(models.Model):
@@ -93,6 +105,8 @@ class Review(models.Model):
     )
     
     class Meta:
+        ordering = ['-pub_date']
+        verbose_name = 'Отзыв'
         constraints = [
         models.UniqueConstraint(
             name="unique_relationships",
@@ -101,7 +115,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
 
 
 class Comment(models.Model):

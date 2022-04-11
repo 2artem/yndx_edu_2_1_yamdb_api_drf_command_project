@@ -35,17 +35,17 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get', 'patch'])
     def me(self, request):
         """Метод обрабатывающий эндпоинт 'me'."""
-        user = User.objects.get(username=request._user.username)
+        user = User.objects.get(username=request.user.username)
         if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data)
         # Если пользователь не пожелал менять/передавать username и email
+        request.POST._mutable = True
         if 'email' not in request.data:
-            request.data['email'] = request._user.email
+            request.data['email'] = request.user.email
         if 'username' not in request.data:
-            request.data['username'] = request._user.username
-        print(request._user.username)
-        print(request._user.email)
+            request.data['username'] = request.user.username
+        request.POST._mutable = False
         # Сериализуем данные
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
@@ -58,7 +58,7 @@ class UserViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_200_OK
                     )
                 return Response(
-                    {'role': 'Only the admin assigns roles.'},
+                    {'role': 'user'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             serializer.save()

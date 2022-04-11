@@ -72,3 +72,10 @@ class User(AbstractUser):
         blank=True,
         null=True,
     )
+
+    class Meta:
+        ordering = ['username']
+        verbose_name = 'Пользователь'
+
+    def __str__(self):
+        return self.username
