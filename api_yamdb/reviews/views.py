@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -6,15 +5,31 @@ from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .permissions import AdminAllPermission, AdminAllOnlyAuthorPermission
-from .models import Category, Genre, Title, Review, Comment
-from .serializers import TitlesSerializer, CategorySerializer, GenreSerializer, ReviewSerializer, CommentSerializer
-from .pagination import CategoryPagination, GenrePagination, TitlesPagination, ReviewPagination
+from .permissions import AdminAllPermission
+from .permissions import AdminAllOnlyAuthorPermission
+from .models import Category
+from .models import Genre
+from .models import Title
+from .models import Review
+from .models import Comment
+from .serializers import TitlesSerializerMethod
+from .serializers import TitlesSerializer
+from .serializers import CategorySerializer
+from .serializers import GenreSerializer
+from .serializers import ReviewSerializer
+from .serializers import CommentSerializer
+from .pagination import CategoryPagination
+from .pagination import GenrePagination
+from .pagination import TitlesPagination
+from .pagination import ReviewPagination
 from .pagination import CommentPagination
+from .filters import CustomFilter
 
 
-class ListCreateDestroyModelViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
+class ListCreateDestroyModelViewSet(mixins.CreateModelMixin,
+                                    mixins.ListModelMixin,
+                                    mixins.DestroyModelMixin,
+                                    viewsets.GenericViewSet):
     """
     Кастомный базовый вьюсет:
     Вернуть список объектов (для обработки запросов GET);
@@ -35,7 +50,6 @@ class GenreViewSet(ListCreateDestroyModelViewSet):
     search_fields = ('^name',)
 
 
-
 class CategoryViewSet(ListCreateDestroyModelViewSet):
     """Вьюсет для Category."""
     queryset = Category.objects.all()
@@ -49,20 +63,26 @@ class CategoryViewSet(ListCreateDestroyModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Вьюсет для Title."""
-    queryset = Title.objects.annotate(rating=Avg('review__score')).order_by('year')
-    serializer_class = TitlesSerializer
+    queryset = (Title.objects.annotate(
+        rating=Avg('review__score')).order_by('year'))
     permission_classes = (IsAuthenticatedOrReadOnly, AdminAllPermission,)
     pagination_class = TitlesPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    search_fields = ('category__slug', 'genre__slug', 'name', 'year')
-    filterset_fields = ('category', 'genre', 'name', 'year')
+    filterset_class = CustomFilter
 
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TitlesSerializer
+        return TitlesSerializerMethod
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для Review."""
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, AdminAllOnlyAuthorPermission,)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AdminAllOnlyAuthorPermission,
+    )
     filter_backends = (filters.SearchFilter,)
     pagination_class = ReviewPagination
 
@@ -81,7 +101,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для Comment."""
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, AdminAllOnlyAuthorPermission,)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AdminAllOnlyAuthorPermission,
+    )
     pagination_class = CommentPagination
 
     def get_queryset(self):

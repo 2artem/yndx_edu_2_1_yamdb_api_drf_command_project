@@ -1,14 +1,19 @@
-from django.contrib.auth import get_user_model
-from django.db import models
 from django.core.validators import validate_slug
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+from django.db import models
 from datetime import datetime
 
 User = get_user_model()
 
+
 class Category(models.Model):
     name = models.CharField(max_length=256, unique=True)
-    slug = models.SlugField(max_length=50, unique=True, validators=[validate_slug])
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        validators=[validate_slug]
+    )
 
     class Meta:
         ordering = ['slug']
@@ -20,7 +25,11 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=256, unique=True)
-    slug = models.SlugField(max_length=50, unique=True, validators=[validate_slug])
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        validators=[validate_slug]
+    )
 
     class Meta:
         ordering = ['slug']
@@ -102,15 +111,15 @@ class Review(models.Model):
         blank=False,
         null=False
     )
-    
+
     class Meta:
         ordering = ['-pub_date']
         verbose_name = 'Отзыв'
         constraints = [
-        models.UniqueConstraint(
-            name="unique_relationships",
-            fields=['author', 'title'],
-        ),
+            models.UniqueConstraint(
+                name="unique_relationships",
+                fields=['author', 'title'],
+            ),
         ]
 
     def __str__(self):
@@ -125,7 +134,7 @@ class Comment(models.Model):
         related_name='comments'
     )
     review = models.ForeignKey(
-        Review, 
+        Review,
         on_delete=models.CASCADE,
         blank=False,
         null=False,

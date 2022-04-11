@@ -3,6 +3,7 @@ from rest_framework import serializers
 from reviews.models import Category, Genre, Title, Review, Comment
 from rest_framework import status
 
+
 User = get_user_model()
 
 
@@ -21,28 +22,63 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    """Сериалайзер для вывода информации."""
     rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer(
-        #slug_field='slug',
         read_only=True,
-        #queryset=Category.objects.all()
     )
     genre = GenreSerializer(
-        #slug_field='slug',
         read_only=True,
         many=True
-        #queryset=Genre.objects.all()
     )
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
+
+
+class TitlesSerializerMethod(serializers.ModelSerializer):
+    """Сериалайзер для изменения информации."""
+    rating = serializers.IntegerField(read_only=True)
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        required=True,
+        many=False,
+        queryset=Category.objects.all(),
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        required=True,
+        many=True,
+        queryset=Genre.objects.all(),
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category'
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
+
     def validate(self, data):
         """
         Один пользователь может оставить
@@ -52,11 +88,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         title_id = self.context['request'].parser_context['kwargs']['title_id']
         username = self.context['request'].user
         # Проверка на наличие в БД отзыва пользователя из запроса
-        if Review.objects.filter(title_id=title_id, author=username).exists() and self.context['request'].method == 'POST':
+        if (Review.objects.filter(title_id=title_id, author=username).exists()
+                and self.context['request'].method == 'POST'):
             raise serializers.ValidationError(
-                    'Вы уже оставляли свой отзыв к этому произведению.',
-                    code=status.HTTP_400_BAD_REQUEST
-                )
+                'Вы уже оставляли свой отзыв к этому произведению.',
+                code=status.HTTP_400_BAD_REQUEST
+            )
         return data
 
     class Meta:

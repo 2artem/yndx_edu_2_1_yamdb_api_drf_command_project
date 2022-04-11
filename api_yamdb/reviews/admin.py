@@ -1,7 +1,11 @@
 from django.contrib import admin
-from .models import Review, Title, Genre, Category, Comment
+from .models import Review
+from .models import Title
+from .models import Genre
+from .models import Category
+from .models import Comment
 
-# Register your models here.
+
 class ReviewAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
@@ -12,22 +16,16 @@ class ReviewAdmin(admin.ModelAdmin):
         'title'
     )
 
-admin.site.register(Review, ReviewAdmin)
-
 
 class TitlesAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'name',
-        #'rating',
-        #'genre',
         'category',
         'description',
         'year'
     )
     filter_horizontal = ('genre',)
-
-admin.site.register(Title, TitlesAdmin)
 
 
 class GenreAdmin(admin.ModelAdmin):
@@ -36,16 +34,12 @@ class GenreAdmin(admin.ModelAdmin):
         'slug'
     )
 
-admin.site.register(Genre, GenreAdmin)
-
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'slug'
     )
-
-admin.site.register(Category, CategoryAdmin)
 
 
 class CommentAdmin(admin.ModelAdmin):
@@ -57,4 +51,9 @@ class CommentAdmin(admin.ModelAdmin):
         'pub_date'
     )
 
+
 admin.site.register(Comment, CommentAdmin)
+admin.site.register(Genre, GenreAdmin)
+admin.site.register(Title, TitlesAdmin)
+admin.site.register(Review, ReviewAdmin)
+admin.site.register(Category, CategoryAdmin)

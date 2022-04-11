@@ -15,8 +15,6 @@ class UserAdmin(admin.ModelAdmin):
         'role',
         'is_staff',
         'is_superuser',
-        'password',
-        'confirmation_code',
     )
     search_fields = ('username',)
     empty_value_display = 'NULL'

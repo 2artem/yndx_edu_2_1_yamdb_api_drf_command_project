@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+
 class AdminAllPermission(permissions.BasePermission):
     """
     Кастомный пермишн для работы администратора c небезопасными методами.
