@@ -6,7 +6,6 @@ from datetime import datetime
 
 User = get_user_model()
 
-# Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=256, unique=True)
     slug = models.SlugField(max_length=50, unique=True, validators=[validate_slug])
@@ -41,7 +40,7 @@ class Titles(models.Model):
         if value > year_now:
             raise ValidationError(message)
 
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, unique=True)
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
