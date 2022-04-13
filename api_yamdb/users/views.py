@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import filters
 from rest_framework import permissions
@@ -8,6 +9,7 @@ from rest_framework.decorators import action
 from .pagination import UserPagination
 from .serializers import UserSerializer
 from .permissions import AdminAllPermissionOrMeURLGetUPDMyself
+
 
 User = get_user_model()
 
@@ -28,23 +30,21 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get', 'patch'])
     def me(self, request):
         """Метод обрабатывающий эндпоинт 'me'."""
-        user = User.objects.get(username=request.user.username)
+        user = get_object_or_404(User, username=request.user.username)
         if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data)
-        # Если пользователь не пожелал менять/передавать username и email
+        # Если username и email не переданы
         request.POST._mutable = True
-        if 'email' not in request.data:
-            request.data['email'] = request.user.email
-        if 'username' not in request.data:
-            request.data['username'] = request.user.username
+        request.data['email'] = request.user.email
+        request.data['username'] = request.user.username
         request.POST._mutable = False
         # Сериализуем данные
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             # Проверка что роль может изменить только admin или superuser
             if 'role' in request.data:
-                if user.is_superuser or user.role == 'admin':
+                if user.is_superuser or user.is_admin:
                     serializer.save()
                     return Response(
                         serializer.data,

@@ -6,7 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from users.serializers import UserSerializer
+from .serializers import UserAuthSerializer
+from .serializers import UserConfirmationCodeSerializer
 
 
 User = get_user_model()
@@ -52,66 +53,49 @@ def token_send(found_user):
 @api_view(['POST'])
 def signup_to_api(request):
     """View-функция отсылающая код подтверждения на email адрес."""
-    # Проверяем наличие обязательных полей
-    chek_list_required_fields = ['username', 'email']
-    not_correct_fields = checking_required_fields(
-        request,
-        chek_list_required_fields
-    )
-    if not_correct_fields is not None:
-        return not_correct_fields
-    # Запрет на создание 'username'='me'
-    if request.data['username'] == 'me':
-        return Response(
-            {'detail': 'username cannot be '"'me'"'.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    # Проверяем есть в БД username (значит валидный email будет тоже)
-    found_user = User.objects.filter(username=request.data['username'])
-    if len(found_user) != 1:
-        # username отсутствует, создаем нового
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            # Отправляем токен
-            found_user = User.objects.get(username=request.data['username'])
-            found_user.confirmation_code = token_send(found_user)
-            found_user.save()
+    serializer = UserAuthSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    email = serializer.validated_data['email']
+    user = User.objects.filter(username=serializer.validated_data['username'])
+    # Есть ли такой username в БД
+    if user.exists():
+        if user[0].email == email:
+            user[0].confirmation_code = token_send(user[0])
+            user[0].save()
             return Response(
-                {'email': found_user.email, 'username': found_user.username},
-                status=status.HTTP_200_OK
+                {'email': user[0].email, 'username': user[0].username},
+                status=status.HTTP_200_OK,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # Проверяем что email соотвтетсвует username в БД,
-    # предотврящая несанкционированный доступ
-    found_user = User.objects.get(username=request.data['username'])
-    if found_user.email != request.data['email']:
+        message = (
+            'This '"'email'"' already exists or wrong'
+            'pair '"'username'"' and '"'email'"'.'
+        )
         return Response(
-            {'detail': 'Wrong pair '"'username'"' and '"'email'"'.'},
+            {'username': message},
             status=status.HTTP_400_BAD_REQUEST
         )
-    # Отправляем токен
-    found_user.confirmation_code = token_send(found_user)
-    found_user.save()
-    return Response(
-        {'email': found_user.email, 'username': found_user.username},
-        status=status.HTTP_200_OK
-    )
+    # Проверяем что входящий емейл не принадлежит другому пользователю
+    if User.objects.filter(email=serializer.validated_data['email']).exists():
+        return Response(
+            {'email': 'This '"'email'"' already exists.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    new_user = User.objects.create(**serializer.validated_data)
+    new_user.confirmation_code = token_send(new_user)
+    new_user.save()
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def issue_a_token(request):
-    # Проверяем наличие обязательных полей
-    chek_list_required_fields = ['username', 'confirmation_code']
-    not_correct_fields = checking_required_fields(
-        request,
-        chek_list_required_fields
-    )
-    if not_correct_fields is not None:
-        return not_correct_fields
+    serializer = UserConfirmationCodeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     # Проверяем username и confirmation_code
-    user = get_object_or_404(User, username=request.data['username'])
-    request_code = request.data['confirmation_code']
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data['username']
+    )
+    request_code = serializer.validated_data['confirmation_code']
     if custom_token_generator.check_token(user, request_code):
         tokenjwt = RefreshToken.for_user(user)
         return Response({'token': str(tokenjwt.access_token)})

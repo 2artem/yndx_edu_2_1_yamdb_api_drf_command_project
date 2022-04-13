@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from django.urls import reverse
 
 
 class AdminAllPermissionOrMeURLGetUPDMyself(permissions.BasePermission):
@@ -6,12 +7,11 @@ class AdminAllPermissionOrMeURLGetUPDMyself(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Переопределяем стандартный метод has_permission."""
-        its_me_page_path = request.path == '/api/v1/users/me/'
-        if its_me_page_path:
+        if request.path == reverse('user-detail', kwargs={'username': 'me'}):
             # Если страница me, даем доступ
             return True
         # Если соответствующие эндпоинты users
-        return bool(request.user.is_superuser or request.user.role == 'admin')
+        return bool(request.user.is_superuser or request.user.is_admin)
 
 
 class AdminAllPermission(permissions.BasePermission):
@@ -21,7 +21,7 @@ class AdminAllPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Переопределяем стандартный метод has_permission."""
-        return bool(request.user.is_superuser or request.user.role == 'admin')
+        return bool(request.user.is_superuser or request.user.is_admin)
 
 
 class AdminAllOnlyAuthorPermission(permissions.BasePermission):
@@ -34,6 +34,6 @@ class AdminAllOnlyAuthorPermission(permissions.BasePermission):
         """Переопределяем стандартный метод has_object_permission."""
         return bool(
             request.user.is_superuser
-            or request.user.role == 'admin'
+            or request.user.is_admin
             or obj.author == request.user
         )

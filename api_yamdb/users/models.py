@@ -4,6 +4,10 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
 
 def username_validator_not_past_me(value):
     """Проверка что username не равно me."""
@@ -32,9 +36,9 @@ class User(AbstractUser):
         },
     )
     ROLE = (
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор')
+        (USER, 'Пользователь'),
+        (MODERATOR, 'Модератор'),
+        (ADMIN, 'Администратор')
     )
     first_name = models.CharField(
         _('first name'),
@@ -59,19 +63,27 @@ class User(AbstractUser):
         'Роль',
         max_length=9,
         choices=ROLE,
-        default='user',
+        default=USER,
     )
     password = models.CharField(
         max_length=128,
         blank=True,
         null=True,
     )
-    confirmation_code = models.TextField(
+    confirmation_code = models.CharField(
         'Код подтверждения email',
         max_length=150,
         blank=True,
         null=True,
     )
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
 
     class Meta:
         ordering = ['username']
