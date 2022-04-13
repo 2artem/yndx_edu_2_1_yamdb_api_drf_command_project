@@ -1,8 +1,8 @@
 from django.core.validators import validate_slug
-from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
 from django.db import models
-from datetime import datetime
+from .validators import check_value_year_valid
 
 User = get_user_model()
 
@@ -40,15 +40,6 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    def check_value_year_valid(value):
-        """Проверка что значение года корректно."""
-        message = (
-            'Невозможно выбрать ненаступивший год для произведения.'
-        )
-        year_now = datetime.now().year
-        if value > year_now:
-            raise ValidationError(message)
-
     name = models.CharField(max_length=250, unique=True)
     category = models.ForeignKey(
         Category,
@@ -70,6 +61,7 @@ class Title(models.Model):
         blank=False,
         null=False,
         validators=[check_value_year_valid],
+        db_index=True
     )
 
     class Meta:
@@ -80,18 +72,6 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    CHOICE = [
-        (1, '1'),
-        (2, '2'),
-        (3, '3'),
-        (4, '4'),
-        (5, '5'),
-        (6, '6'),
-        (7, '7'),
-        (8, '8'),
-        (9, '9'),
-        (10, '10')
-    ]
     text = models.TextField(
         max_length=1000,
         blank=False,
@@ -103,7 +83,8 @@ class Review(models.Model):
         null=False,
         related_name='reviews'
     )
-    score = models.IntegerField(choices=CHOICE)
+    score = models.IntegerField(validators=[MinValueValidator(1),
+                                            MaxValueValidator(10)])
     pub_date = models.DateTimeField(auto_now_add=True)
     title = models.ForeignKey(
         Title,
