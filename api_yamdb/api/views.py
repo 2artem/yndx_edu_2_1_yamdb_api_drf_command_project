@@ -23,22 +23,8 @@ class CustomPasswordResetTokenGenerator(PasswordResetTokenGenerator):
         return str(user.pk) + str(login_timestamp) + str(timestamp)
 
 
-def checking_required_fields(request, chek_list_required_fields):
-    """Проверка входящих данных на обязательные поля."""
-    message = ['This field is required.']
-    dict_required_fields = {}
-    for field in chek_list_required_fields:
-        if field not in request.data:
-            dict_required_fields[field] = message
-    if len(dict_required_fields) != 0:
-        return Response(
-            dict_required_fields,
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-
-def token_send(found_user):
-    """Возвращение и отправка токена пользователь на email."""
+def code_send(found_user):
+    """Возвращение и отправка токена пользователю на email."""
     token = custom_token_generator.make_token(found_user)
     send_mail(
         'YaMDb API.Сервис',
@@ -56,33 +42,33 @@ def signup_to_api(request):
     serializer = UserAuthSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     email = serializer.validated_data['email']
-    user = User.objects.filter(username=serializer.validated_data['username'])
-    # Есть ли такой username в БД
-    if user.exists():
-        if user[0].email == email:
-            user[0].confirmation_code = token_send(user[0])
-            user[0].save()
-            return Response(
-                {'email': user[0].email, 'username': user[0].username},
-                status=status.HTTP_200_OK,
+    username = serializer.validated_data['username']
+    # Ищем такого пользователя
+    user = User.objects.filter(email=email).first()
+    if user:
+        # Если пользователь найден
+        # Совпадает ли username у user из request
+        if user.username != username:
+            message = (
+                'This \'email\' already exists or wrong '
+                'pair \'username\' and \'email\'.'
             )
-        message = (
-            'This '"'email'"' already exists or wrong'
-            'pair '"'username'"' and '"'email'"'.'
-        )
-        return Response(
-            {'username': message},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    # Проверяем что входящий емейл не принадлежит другому пользователю
-    if User.objects.filter(email=serializer.validated_data['email']).exists():
-        return Response(
-            {'email': 'This '"'email'"' already exists.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    new_user = User.objects.create(**serializer.validated_data)
-    new_user.confirmation_code = token_send(new_user)
-    new_user.save()
+            return Response(
+                {'username': message},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        # Проверяем, при создании нового пользователя,
+        # не занят ли username из request
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {'username': 'This \'username\' already exists.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user = User.objects.create(**serializer.validated_data)
+    # Отправляем код пользователю
+    user.confirmation_code = code_send(user)
+    user.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -100,7 +86,7 @@ def issue_a_token(request):
         tokenjwt = RefreshToken.for_user(user)
         return Response({'token': str(tokenjwt.access_token)})
     return Response(
-        {'detail': 'Wrong '"'confirmation_code'"'.'},
+        {'detail': 'Wrong \'confirmation_code\'.'},
         status=status.HTTP_400_BAD_REQUEST
     )
 
