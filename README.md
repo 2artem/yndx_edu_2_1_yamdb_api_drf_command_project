@@ -5,15 +5,15 @@
 ## Проект разработан командой из двух человек, написан бэкенд проекта (приложение reviews) и API для него.
 
 
-## Ссылки на модернизированный проект:
+## Ссылки на деплой проекта:
 
-#### Реализован API для всех моделей проекта (CRUD для Yatube)111111111111111111111111111111111111
+#### Запуск проекта в контейнерах:
 
-https://github.com/2artem/yndx_edu_1_2_yatube_api_drf_crud
+https://github.com/2artem/yndx_edu_2_2_yamdb_api_drf_docker_compose
 
-#### 222222222222222222222222222222222222222222222222222222222
+####  Continuous Integration и Continuous Deployment (CI / CD) проекта (автоматический деплой на боевой сервер при пуше в главную ветку git - main):
 
-https://github.com/2artem/yndx_edu_1_3_yatube_api_drf_subscriptions
+https://github.com/2artem/yndx_edu_2_3_yamdb_api_drf_cl_cd_gitactions
 
 ## Описание
 
